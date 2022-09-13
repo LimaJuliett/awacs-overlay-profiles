@@ -1,0 +1,197 @@
+{
+    "comments": {
+        "channel/band keywords": {
+            "HF": "all channels with frequencies between 1 and 100 MHz",
+            "VHF": "all channels with frequencies between 100 and 200 MHz",
+            "UHF": "all channels with frequencies between 200 and 400 MHz",
+            "all": "all channels"
+        },
+        "band keywords": {
+            "HF": "min freq = 1 MHz, max freq = 100 MHz",
+            "VHF": "min freq = 100 MHz, max freq = 200 MHz",
+            "UHF": "min freq = 200 MHz, max freq = 400 MHz",
+            "all": "min freq = 1 MHz, max freq = 400 MHz"
+        },
+        "default-freq": [
+            "The default-freq field for a radio may be a frequency in MHz or a channel name. If it is a channel name, the radio's default frequency will be that channel's frequency."
+        ]
+    },
+    "radios": [
+        {
+            "name": "SHORE GND",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 232.1,
+            "channels": ["all"]
+        },
+        {
+            "name": "SHORE LOCAL",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": "Local A",
+            "channels": ["all"]
+        },
+        {
+            "name": "SHORE APP",
+            "modulation": "AM",
+            "band": "UHF",
+            "default-freq": 252.8,
+            "channels": ["all"]
+        },
+        {
+            "name": "SHORE FINAL",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 232.3,
+            "channels": ["Shore Final A1", "Shore Final A2", "Shore Final B1", "Shore Final B2"]
+        },
+        {
+            "name": "FM Radio",
+            "modulation": "FM",
+            "band": "HF",
+            "default-freq": 121.5,
+            "channels": ["HF"]
+        },
+        {
+            "name": "MARSHALL",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 244.5,
+            "channels": ["all"]
+        },
+        {
+            "name": "SEA APP",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 244.4,
+            "channels": ["all"]
+        },
+        {
+            "name": "SEA FINAL",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 244.42,
+            "channels": ["all"]
+        },
+        {
+            "name": "SEA TOWER",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 249.2,
+            "channels": ["all"]
+        },
+        {
+            "name": "GUARD",
+            "modulation": "AM",
+            "band": "all",
+            "default-freq": 121.5,
+            "channels": ["all"]
+        }
+    ],
+    "channels": {
+        "A-10s": {
+            "freq": 69,
+            "modulation": "FM"
+        },
+        "Ground A": {
+            "freq": 232.1,
+            "modulation": "AM"
+        },
+        "Ground B": {
+            "freq": 263.1,
+            "modulation": "AM"
+        },
+        "Local A": {
+            "freq": 232.5,
+            "modulation": "AM"
+        },
+        "Local B": {
+            "freq": 263.5,
+            "modulation": "AM"
+        },
+        "Shore Approach A": {
+            "freq": 252.8,
+            "modulation": "AM"
+        },
+        "Shore Approach B": {
+            "freq": 267.9,
+            "modulation": "AM"
+        },
+        "Shore Approach C": {
+            "freq": 210.35,
+            "modulation": "AM"
+        },
+        "Shore Final A1": {
+            "freq": 232.3,
+            "modulation": "AM"
+        },
+        "Shore Final A2": {
+            "freq": 232.4,
+            "modulation": "AM"
+        },
+        "Shore Final B1": {
+            "freq": 263.3,
+            "modulation": "AM"
+        },
+        "Shore Final B2": {
+            "freq": 263.4,
+            "modulation": "AM"
+        },
+        "Marshall A": {
+            "freq": 244.5,
+            "modulation": "AM"
+        },
+        "Marshall B": {
+            "freq": 254.25,
+            "modulation": "AM"
+        },
+        "Sea Approach A": {
+            "freq": 244.4,
+            "modulation": "AM"
+        },
+        "Sea Approach B": {
+            "freq": 254.27,
+            "modulation": "AM"
+        },
+        "Sea Final A1": {
+            "freq": 244.42,
+            "modulation": "AM"
+        },
+        "Sea Final A2": {
+            "freq": 244.43,
+            "modulation": "AM"
+        },
+        "Sea Final B1": {
+            "freq": 254.63,
+            "modulation": "AM"
+        },
+        "Sea Final B2": {
+            "freq": 254.64,
+            "modulation": "AM"
+        },
+        "Sea Tower A": {
+            "freq": 249.2,
+            "modulation": "AM"
+        },
+        "Sea Tower B": {
+            "freq": 208.45,
+            "modulation": "AM"
+        },
+        "UHF Guard": {
+            "freq": 243,
+            "modulation": "AM"
+        },
+        "VHF Guard": {
+            "freq": 121.5,
+            "modulation": "AM"
+        },
+        "FM Channel 1": {
+            "freq": 30,
+            "modulation": "FM"
+        },
+        "FM Channel 2": {
+            "freq": 36,
+            "modulation": "FM"
+        }
+    }
+}
