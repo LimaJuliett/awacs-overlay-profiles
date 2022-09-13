@@ -215,22 +215,32 @@ def main():
         try:
             new_config = json.loads(new_config_file.read())
         except json.JSONDecodeError:
-            print('Could not decode JSON. Check that the file is valid JSON and try again.')
+            print('Could not parse JSON. Check that the file is valid JSON and try again.')
             input('Press Enter to exit... ')
             exit()
     print('Done')
 
     # TODO verify the profile
 
+    print('Generating new awacs-radios json... ', end = '')
+    try:
+        modify_awacs_radios(awacs_radios_template, new_config)
+    except Exception as exception:
+        print('Something went wrong! All JSON is valid, but there may be improper keyword usage, improper application of quotation marks, or some other issue.\nCheck your file and try again.\n')
+        print(f"The problem (for debugging purposes): {exception}")
+        input('Press Enter to exit... ')
+        exit()
+    print('Done')
 
     # show a preview of the profile and ask for write permission
     print_overlay("Selected profile:", new_config)
 
-    proceed = input('Write this layout to json file? (y/N): ').lower()
-    
+    proceed = input('Write this profile? (y/N): ').lower()
+    print()
+
     # write the profile
     if proceed == 'y':
-        print('Opening awacs-radios.json... ', end = '')
+        print('Reading awacs-radios.json... ', end = '')
 
         with filedialog.askopenfile(mode='r', title='Select awacs-radios.json', initialdir="C:\Program Files\DCS-SimpleRadio-Standalone", filetypes=(('JSON Files', "*.json"), ('All files', "*.*"))) as awacs_radios_file:
             filepath = os.path.realpath(awacs_radios_file.name)
@@ -238,63 +248,38 @@ def main():
         with open(filepath, 'r', encoding='utf-8-sig') as awacs_radios_file:
             try:
                 old_radionames = read_awacs_json_settings(awacs_radios_file.read())
-            except json.JSONDecodeError:
-                print('Could not decode JSON. Check that the file is valid JSON and try again.')
-                input('Press Enter to exit... ')
-                exit()
-        print('Done')
+                print('Done')
 
-        print('Cleaning old channel texts... ')
-        for radioname in set(old_radionames):
-            try:
-                os.remove(os.path.join(folderpath, radioname + '.txt'))
-            except:
-                pass
-
-        print('Generating new awacs-radios json... ', end = '')
-        try:
-            modify_awacs_radios(awacs_radios_template, new_config)
-        except:
-            print('Something went wrong! All JSON is valid, but there may be too many radios, improper keyword usage, or improper application of quotation marks.\nCheck your file and try again.')
-        print('Done')
+                print('Cleaning old channel texts... ')
+                for radioname in set(old_radionames):
+                    try:
+                        os.remove(os.path.join(folderpath, radioname + '.txt'))
+                    except:
+                        pass
+            except Exception as exception:
+                print('Failed')
+                print(exception)
 
         print(f"Writing new json to {filepath}... ", end = '')
         with open(filepath, 'w') as awacs_radios_file:
             awacs_radios_file.write(json.dumps(awacs_radios_template, indent='\t'))
         print('Done')
 
-        print('Writing new channel texts... ', end = '')
-        for radio in new_config['radios']:
-            channels_text = ''
-            for channel_item in radio['channels']:
-                if channel_item.lower() == 'all':
-                    for channel in new_config['channels']:
-                        if radio['modulation'] == new_config['channels'][channel]['modulation']:
-                            channels_text += (channel + '|' + str(new_config['channels'][channel]['freq']) + '\n')
-                
-                elif channel_item.upper() == 'HF':
-                    for channel in new_config['channels']:
-                        if 1 <= new_config['channels'][channel]['freq'] <= 100 and radio['modulation'] == new_config['channels'][channel]['modulation']:
-                            channels_text += (channel + '|' + str(new_config['channels'][channel]['freq']) + '\n')
-                
-                elif channel_item.upper() == 'VHF':
-                    for channel in new_config['channels']:
-                        if 100 <= new_config['channels'][channel]['freq'] <= 200 and radio['modulation'] == new_config['channels'][channel]['modulation']:
-                            channels_text += (channel + '|' + str(new_config['channels'][channel]['freq']) + '\n')
-                
-                elif channel_item.upper() == 'UHF':
-                    for channel in new_config['channels']:
-                        if 200 <= new_config['channels'][channel]['freq'] <= 400 and radio['modulation'] == new_config['channels'][channel]['modulation']:
-                            channels_text += (channel + '|' + str(new_config['channels'][channel]['freq']) + '\n')
+        print('Creating new channel texts... ', end = '')
+        try:
+            for radio in new_config['radios']:
+                channel_text = generate_channel_text(radio, new_config)
 
-                else:
-                    for channel in new_config['channels']:
-                        if channel_item == channel:
-                            channels_text += (channel + '|' + str(new_config['channels'][channel]['freq']) + '\n')
-
-            with open(os.path.join(folderpath, radio['name'] + '.txt'), 'w') as channel_file:
-                channel_file.write(channels_text)
-        print('Done')
+                with open(os.path.join(folderpath, radio['name'] + '.txt'), 'w') as channel_file:
+                    channel_file.write(channel_text)
+            
+            print('Done')
+        except FinishedWithWarning as warning:
+            print('Completed with warning')
+            print(warning)
+        except Exception as exception:
+            print('Failed')
+            print(exception)
 
         input('Press Enter to exit...')
         exit()
@@ -303,13 +288,17 @@ def main():
         exit()
 
 def read_awacs_json_settings(awacs_json):
-    awacs_radios = json.loads(awacs_json)
+    try:
+        awacs_radios = json.loads(awacs_json)
+    except:
+        raise Exception('Invalid JSON. Continuing without removing old channel texts...')
     
     radionames = []
+
     for radio in awacs_radios:
         if radio['name'] != 'SATCOM':
             radionames.append(radio['name'])
-    
+        
     return radionames
 
 def modify_awacs_radios(awacs_radios, new_profile):
@@ -318,8 +307,12 @@ def modify_awacs_radios(awacs_radios, new_profile):
         
         if type(new_profile['radios'][i]['default-freq']) == str:
             channel_name = new_profile['radios'][i]['default-freq']
-            awacs_radios[i + 1]['freq'] = new_profile['channels'][channel_name]['freq'] * 1000000
-            # TODO add try/except to catch spelling mistakes here
+            try:
+                awacs_radios[i + 1]['freq'] = new_profile['channels'][channel_name]['freq'] * 1000000
+            except KeyError:
+                error = f"Radio {new_profile['radios'][i]['name']}: Channel {channel_name} does not exist."
+                print(error)
+                raise Exception(error)
         elif type(new_profile['radios'][i]['default-freq']) == float or type(new_profile['radios'][i]['default-freq']) == int:
             awacs_radios[i + 1]['freq'] = new_profile['radios'][i]['default-freq'] * 1000000
         
@@ -341,6 +334,38 @@ def modify_awacs_radios(awacs_radios, new_profile):
         elif new_profile['radios'][i]['modulation'] == 'FM':
             awacs_radios[i+1]['modulation'] = 1
 
+def generate_channel_text(radio, new_profile):
+    channel_text = ''
+    for channel_item in radio['channels']:
+        if channel_item.lower() == 'all':
+            for channel in new_profile['channels']:
+                if radio['modulation'] == new_profile['channels'][channel]['modulation']:
+                    channel_text += (channel + '|' + str(new_profile['channels'][channel]['freq']) + '\n')
+        
+        elif channel_item.upper() == 'HF':
+            for channel in new_profile['channels']:
+                if 1 <= new_profile['channels'][channel]['freq'] <= 100 and radio['modulation'] == new_profile['channels'][channel]['modulation']:
+                    channel_text += (channel + '|' + str(new_profile['channels'][channel]['freq']) + '\n')
+        
+        elif channel_item.upper() == 'VHF':
+            for channel in new_profile['channels']:
+                if 100 <= new_profile['channels'][channel]['freq'] <= 200 and radio['modulation'] == new_profile['channels'][channel]['modulation']:
+                    channel_text += (channel + '|' + str(new_profile['channels'][channel]['freq']) + '\n')
+        
+        elif channel_item.upper() == 'UHF':
+            for channel in new_profile['channels']:
+                if 200 <= new_profile['channels'][channel]['freq'] <= 400 and radio['modulation'] == new_profile['channels'][channel]['modulation']:
+                    channel_text += (channel + '|' + str(new_profile['channels'][channel]['freq']) + '\n')
+
+        else:
+            try:
+                channel_text += channel_item + '|' + str(new_profile['channels'][channel_item]['freq']) + '\n'
+            except:
+                raise FinishedWithWarning(f"Radio '{radio['name']}': Channel '{channel_item}' was not found. {channel_item} will not be an available channel.")
+    
+    return(channel_text)
+    
+
 def print_overlay(title, config):
     radionames = []
     for radio in config['radios']:
@@ -360,6 +385,9 @@ def print_overlay(title, config):
     for i in range(5):
         print(radionames[i+5].center(max_length) + '|', end = '')
     print('\n' + horizontal_divider + '\n')
+
+class FinishedWithWarning(Exception):
+    '''function finished, but something unexpected happened'''
 
 if __name__ == '__main__':
     main()
